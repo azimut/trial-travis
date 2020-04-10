@@ -51,7 +51,7 @@ install:
     cd ~
   fi
   if [ "$TRAVIS_OS_NAME" = "windows" ]; then
-    cp $HOME/mesa3d/x64/opengl32.dll C:/windows/system32/
+    cp -v $HOME/mesa3d/x64/opengl32.dll C:/windows/system32/
   fi
 #
 # GLFW
@@ -59,7 +59,7 @@ install:
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install glfw3; fi
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt update; sudo apt install libglfw3-dev; fi
 - |
-  if [ "$TRAVIS_OS_NAME" = "windows" -a ! -f "$HOME/glfw/glfw.zip" ]; then
+  if [ "$TRAVIS_OS_NAME" = "windows" -a ! -f "$HOME/glfw/glfw-binary.zip" ]; then
     mkdir -p glfw
     cd glfw/
     wget -nc -O glfw-binary.zip https://github.com/glfw/glfw/releases/download/${GLFW_VERSION}/glfw-${GLFW_VERSION}.bin.WIN64.zip
@@ -67,7 +67,7 @@ install:
     cd ~
   fi
   if [ "$TRAVIS_OS_NAME" = "windows" ]; then
-    cp $HOME/glfw/glfw-${GLFW_VERSION}.bin.WIN64/lib-vc2012/glfw3.dll C:/windows/system32/
+    cp -v $HOME/glfw/glfw-${GLFW_VERSION}.bin.WIN64/lib-vc2012/glfw3.dll C:/windows/system32/
   fi
 #
 # SBCL build
