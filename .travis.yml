@@ -108,10 +108,9 @@ script:
 - mv ~/quicklisp/local-projects/${PACKAGE_NAME}/bin ~/bin
 before_deploy:
 - if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install zip; fi
-- mv ~/bin ~/quicklisp/local-projects/${PACKAGE_NAME}/bin
+- mv -v ~/bin ~/quicklisp/local-projects/${PACKAGE_NAME}/bin
 - cd ~/quicklisp/local-projects/${PACKAGE_NAME}
-- if [ "$TRAVIS_OS_NAME" = "windows" ]; then mv "bin/${BINARY_NAME}" "bin/${BINARY_NAME}.exe";
-  fi
+- if [ "$TRAVIS_OS_NAME" = "windows" ]; then mv -v "bin/${BINARY_NAME}" "bin/${BINARY_NAME}.exe"; fi
 - mkdir release
 - zip -r "release/binaries-${TRAVIS_OS_NAME}.zip" bin;
 - git tag -f latest
@@ -123,3 +122,5 @@ deploy:
   file: release/*
   on:
     repo: azimut/trial-travis
+  skip_cleanup: true
+  overwrite: true
