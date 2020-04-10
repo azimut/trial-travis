@@ -1,11 +1,12 @@
 os:
-  - linux
-  - osx
+#  - linux
+#  - osx
   - windows
 language: c
 
+# NOTE: also change name on deploy: section below
 env:
-  - SBCL_VERSION="2.0.3" SDL_VERSION="2.0.10" BINARY_NAME="vydia" PACKAGE_NAME="trial-travis"
+  - SBCL_VERSION="2.0.3" SDL_VERSION="2.0.10" GLFW_VERSION="3.3" BINARY_NAME="vydia" PACKAGE_NAME="trial-travis"
 
 branches:
   only:
@@ -13,12 +14,9 @@ branches:
 
 cache:
   directories:
-    - "$HOME/trial"
-    - "$HOME/libz"
     - "$HOME/sbcl"
     - "$HOME/glfw"
     - "$HOME/mesa3d"
-    - "$HOME/sdl2"
     - "$HOME/quicklisp"
     - "$HOME/.cache/common-lisp"
     - "$HOME/AppData/Local/cache/common-lisp"
@@ -64,15 +62,17 @@ install:
   if [ "$TRAVIS_OS_NAME" = "windows" -a ! -f "$HOME/glfw/glfw.zip" ]; then
     mkdir -p glfw
     cd glfw/
-    wget -nc -O glfw.zip https://github.com/glfw/glfw/archive/3.3.zip
+    wget -nc -O glfw.zip https://github.com/glfw/glfw/archive/${GLFW_VERSION}.zip
     7z x glfw.zip
-    cd glfw-3.3/
+    cd glfw-${GLFW_VERSION}/
     export GLFW3_INCLUDE_DIR=`pwd`/include
     export GLFW3_INSTALL_DIR=`pwd`/install
     cmake . -DCMAKE_INSTALL_PREFIX=$GLFW3_INSTALL_DIR -DCMAKE_GENERATOR_PLATFORM=x64
     cmake --build . --target install
-    find . -name '*.dll'
     cd ~
+  fi
+  if [ "$TRAVIS_OS_NAME" = "windows" ]; then
+    ls $HOME/glfw/glfw-${GLFW_VERSION}/install/*
   fi
   # if [ "$TRAVIS_OS_NAME" = "windows" ]; then
   #   cp $HOME/sdl2/SDL2.dll C:/windows/system32/
@@ -96,8 +96,8 @@ install:
 #
 - |
   cd ~/quicklisp/local-projects
-  git clone --depth=50 https://github.com/Shirakumo/trial
   git clone --depth=50 https://github.com/Shirakumo/cl-gamepad
+  git clone --depth=50 https://github.com/Shirakumo/trial
   cd trial/
   git revert -n 032abbd6a8e44e24e41d4a8bdfffe3f691c443cb
   cd ~
@@ -121,14 +121,13 @@ before_deploy:
   - mkdir release
   - zip -r "release/binaries-${TRAVIS_OS_NAME}.zip" bin;
   - git tag -f latest
-
 # deploy:
 #   provider: releases
 #   api_key:
-#     secure: KN0SBipD8YlaKM9csGOLPP/vowQQ0ZpfeTaLiZqzbpoDrWr5TufRj+xGvH/a+GzCT3NLgeyGfqGuXNrK0qvh/9aoeLYyaNjhAezeWxhNhoCTjmCEabr5/+bLKlPg8WYaz00p5D3cQ8Hlig9ZPMoieSn0V4qceN3FRqlJKctAu4zleZptkXN3pMX0AIGWbq8u64Oqrmu0V0xLU4mg6pGhtQZ6m/NdPfd9ZbyFZUcqUSyhm9SINMlViMesVjc0zLZ+yj2TRHNrQwH4dvtx3WjCru2Q1HS6mPBMfTdyVK9z6JonKCY3zk3MonL4pWQnafH3sROVF2s4ny8zBeeM4sjqbGwPqieNsVAmq6apf/+B+YBMlhB4XoTrL0liPV1IRjCvss1BsswuBDTrGCpdtk4VN7RDnEx4BpkZ0wi9YcxuQIgD4oPoVZEHmVbUCTUNVZYS5BRh8cQNYGsZgGyjWVWuThWeOXgeXLZ7zoHHswYvOfkrt4fA3PGvTpSLXobd7m7xLnbG08OXiedFSk+CITV1kpO34Zh0C8pXgOpo7y/EDXRVFmRWA4iZrGEDH/FoIPP+T87aAPvoF29ZokFv4eLXRl1p4NwhN4sBz+R0pztdO7WwjliPrqrXMMl8CyujqVhZ64MVRlOvs+n/G3pgdRUnegaMRU+M+8MenJmLW4r+Ago=
-#   file_glob: true
+#     secure: FrK6FVCYTFnqy91tAbd101qq8uul2ulIsjWmheOINVtLFvLwgu32d4S7r+xrOisDxY421pOxdNAnZPG3eBhPYZSzTDfnYoNKhicTs5z3abnehhtFI2UZdOtLwlM5ZxrbWJR76PlWiELt1Fzz4rPK2Q+oxyxt/Ir+DdtEF/4E0eAUGer5Gs+MM5HaHKNqcUJC6jfROjnSE3C257QSS87qdt6A9dEFEf/XwELjK9LsYD7lT/N8GmIUZgDJrQlnHa7jos3vX3XrWUmvuLz+pa0qRRLR0xPIEm5phy/2b+BHEWdTwO5zYMfwvaWVrFA/XzYPa+p63NIhePmPVVAbfVuaG2471FMVsDz+iNxrMowPSGXLQhJh7+/o0hBX1H3MUxKtdkPd4JA98/kEfTmJqFqOC8O+HtrqyC1C0f7VAY4rDoBywuuQUvp2QF+YaiVZ1WTx3ZFTSCO1LJIiPer7sh2xFz3YJ1xK5IJIYIBw1xdkwRqYj/ein9OEFH+DuFiDmbAVnNSoVdSLIuHfYgSUyraPuzuSBdzTXH5whLToc1vfJn78vTRL3JS3e54u/ZtsQ/q7KITmhoRWUObaj0bnjdX7rWpr4wfcOPp0q/sn5BiyLePuLX3dy1960/xEdOxZU2Hlq7aTPeRdl3EUgu9CKEacPv89Sd5yOXop6XQ7kV+b6Cs=
 #   file: release/*
 #   on:
-#     repo: azimut/${PACKAGE_NAME}
+#     repo: azimut/trial-travis
 #   skip_cleanup: true
 #   overwrite: true
+
