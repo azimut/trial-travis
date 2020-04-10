@@ -6,7 +6,7 @@ language: c
 
 # NOTE: also change name on deploy: section below
 env:
-  - SBCL_VERSION="2.0.3" SDL_VERSION="2.0.10" GLFW_VERSION="3.3" BINARY_NAME="vydia" PACKAGE_NAME="trial-travis"
+  - SBCL_VERSION="2.0.3" SDL_VERSION="2.0.10" GLFW_VERSION="3.3.2" BINARY_NAME="vydia" PACKAGE_NAME="trial-travis"
 
 branches:
   only:
@@ -62,21 +62,13 @@ install:
   if [ "$TRAVIS_OS_NAME" = "windows" -a ! -f "$HOME/glfw/glfw.zip" ]; then
     mkdir -p glfw
     cd glfw/
-    wget -nc -O glfw.zip https://github.com/glfw/glfw/archive/${GLFW_VERSION}.zip
-    7z x glfw.zip
-    cd glfw-${GLFW_VERSION}/
-    export GLFW3_INCLUDE_DIR=`pwd`/include
-    export GLFW3_INSTALL_DIR=`pwd`/install
-    cmake . -DCMAKE_INSTALL_PREFIX=$GLFW3_INSTALL_DIR -DCMAKE_GENERATOR_PLATFORM=x64
-    cmake --build . --target install
+    wget -nc -O glfw-binary.zip https://github.com/glfw/glfw/releases/download/${GLFW_VERSION}/glfw-${GLFW_VERSION}.bin.WIN64.zip
+    7z x glfw-binary.zip
     cd ~
   fi
   if [ "$TRAVIS_OS_NAME" = "windows" ]; then
-    ls $HOME/glfw/glfw-${GLFW_VERSION}/install/*
+    cp $HOME/glfw/glfw-${GLFW_VERSION}.bin.WIN64/lib-vc2012/glfw3.dll C:/windows/system32/
   fi
-  # if [ "$TRAVIS_OS_NAME" = "windows" ]; then
-  #   cp $HOME/sdl2/SDL2.dll C:/windows/system32/
-  # fi
 #
 # SBCL build
 #
