@@ -1,0 +1,142 @@
+os:
+  - linux
+  - osx
+  - windows
+language: c
+
+env:
+  - SBCL_VERSION="2.0.3" SDL_VERSION="2.0.10" BINARY_NAME="vydia" PACKAGE_NAME="trial-travis"
+
+branches:
+  only:
+  - master
+
+cache:
+  directories:
+    - "$HOME/libz"
+    - "$HOME/sbcl"
+    - "$HOME/glfw"
+    - "$HOME/mesa3d"
+    - "$HOME/sdl2"
+    - "$HOME/quicklisp"
+    - "$HOME/.cache/common-lisp"
+    - "$HOME/AppData/Local/cache/common-lisp"
+
+install:
+- SOURCE_DIR=$(pwd)
+- cd ~
+#
+# SBCL bootstrap
+#
+- if [ "$TRAVIS_OS_NAME" = "windows" -a ! -f "$HOME/sbcl/bin/sbcl" ]; then
+    SBCL_WINDOWS="http://prdownloads.sourceforge.net/sbcl/sbcl-1.4.14-x86-64-windows-binary.msi";
+    wget $SBCL_WINDOWS -O sbcl.msi;
+    choco install lessmsi make;
+    lessmsi x sbcl.msi $(cygpath -w "`pwd`/sbcl_ex/");
+    mv "sbcl_ex/SourceDir/PFiles/Steel Bank Common Lisp/1.4.14" sbcl_bin;
+    export SBCL_HOME="`pwd`/sbcl_bin";
+    export PATH="`pwd`/sbcl_bin:${PATH}";
+  fi
+- if [ "$TRAVIS_OS_NAME" = "osx"   -a ! -f "$HOME/sbcl/bin/sbcl" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install sbcl; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" -a ! -f "$HOME/sbcl/bin/sbcl" ]; then sudo apt update; sudo apt install sbcl; fi
+#
+# OpenGL - Windows only
+#
+- |
+  if [ "$TRAVIS_OS_NAME" = "windows" -a ! -f "$HOME/mesa3d/mesa3d.7z" ]; then
+    choco install 7zip
+    mkdir -p mesa3d
+    wget https://github.com/pal1000/mesa-dist-win/releases/download/19.2.4/mesa3d-19.2.4-release-mingw.7z -O mesa3d/mesa3d.7z
+    cd mesa3d/
+    7z x mesa3d.7z
+    cd ~
+  fi
+  if [ "$TRAVIS_OS_NAME" = "windows" ]; then
+    cp $HOME/mesa3d/x64/opengl32.dll C:/windows/system32/
+  fi
+#
+# GLFW
+#
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install glfw3; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt update; sudo apt install libglfw3-dev; fi
+- |
+  if [ "$TRAVIS_OS_NAME" = "windows" -a ! -f "$HOME/glfw/glfw.zip" ]; then
+    mkdir -p glfw
+    cd glfw/
+    wget -nc -O glfw.zip https://github.com/glfw/glfw/archive/3.3.zip
+    7z x glfw.zip
+    cd glfw-3.3/
+    export GLFW3_INCLUDE_DIR=`pwd`/include
+    export GLFW3_INSTALL_DIR=`pwd`/install
+    cmake . -DCMAKE_INSTALL_PREFIX=$GLFW3_INSTALL_DIR -DCMAKE_GENERATOR_PLATFORM=x64
+    cmake --build . --target install
+    find . -name '*.dll'
+    cd ~
+  fi
+  # if [ "$TRAVIS_OS_NAME" = "windows" ]; then
+  #   cp $HOME/sdl2/SDL2.dll C:/windows/system32/
+  # fi
+#
+# SBCL build
+#
+- if [ ! -f "$HOME/sbcl/bin/sbcl" ]; then SBCL_SOURCE="http://downloads.sourceforge.net/project/sbcl/sbcl/$SBCL_VERSION/sbcl-$SBCL_VERSION-source.tar.bz2";
+  wget $SBCL_SOURCE -O sbcl.tar.bz2; tar -xf sbcl.tar.bz2; cd "sbcl-$SBCL_VERSION";
+  sh make.sh --fancy; unset SBCL_HOME; INSTALL_ROOT=~/sbcl ./install.sh; cd ~; fi
+- export SBCL_HOME="$HOME/sbcl/lib/sbcl"
+- export PATH="$HOME/sbcl/bin:${PATH}"
+- if [ ! -f "$HOME/quicklisp/setup.lisp" ]; then wget https://beta.quicklisp.org/quicklisp.lisp;
+  sbcl --disable-debugger --eval "(load \"quicklisp.lisp\")" --eval "(quicklisp-quickstart:install)"
+  --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(ql:update-all-dists)"
+  --eval "(sb-ext:exit)"; else sbcl --disable-debugger --eval "(load \"quicklisp/setup.lisp\")"
+  --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(sb-ext:exit)";
+  rm -rf ~/quicklisp/local-projects; mkdir ~/quicklisp/local-projects; fi
+#
+# Copy local-projects
+#
+- mv $SOURCE_DIR ~/quicklisp/local-projects
+#
+# Zlib
+#
+# - |
+#   if [ "$TRAVIS_OS_NAME" = "windows"  ]; then
+#     if [ ! -f "$HOME/libz/zlib1211.zip" ]; then
+#       choco install make
+#       mkdir -p $HOME/libz
+#       cd $HOME/libz
+#       wget https://zlib.net/zlib1211.zip
+#       unzip zlib1211.zip
+#       cd zlib-1.2.11/
+#       ./configure --sharedlibdir=/bin --prefix=/
+#       make SHAREDLIB=libz.dll SHAREDLIBM=libz-1.dll SHAREDLIBV=libz-1.2.11.dll LDSHAREDLIBC='' -j1
+#     fi
+#     cp -v $HOME/libz/zlib-1.2.11/libz.dll C:/windows/system32/
+#     cp -v $HOME/libz/zlib-1.2.11/libz-1.dll C:/windows/system32/
+#     cp -v $HOME/libz/zlib-1.2.11/libz-1.2.11.dll C:/windows/system32/
+#     cd ~
+#   fi
+
+script:
+  - sbcl --disable-debugger --eval "(ql:update-all-dists)" --eval "(sb-ext:exit)"
+  - sbcl --disable-debugger --eval "(ql:quickload :deploy)" --eval "(ql:quickload :trial)" --eval "(sb-ext:exit)"
+  - sbcl --disable-debugger --eval "(ql:quickload :deploy)" --eval "(ql:quickload :${PACKAGE_NAME})" --eval "(deploy:define-library CL-OPENGL-BINDINGS::OPENGL :dont-deploy t)" --eval "(asdf:make :${PACKAGE_NAME})"
+  - mv ~/quicklisp/local-projects/${PACKAGE_NAME}/bin ~/bin
+
+before_deploy:
+- if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install zip; fi
+- mv ~/bin ~/quicklisp/local-projects/${PACKAGE_NAME}/bin
+- cd ~/quicklisp/local-projects/${PACKAGE_NAME}
+- if [ "$TRAVIS_OS_NAME" = "windows" ]; then mv "bin/${BINARY_NAME}" "bin/${BINARY_NAME}.exe"; fi
+- mkdir release
+- zip -r "release/binaries-${TRAVIS_OS_NAME}.zip" bin;
+- git tag -f latest
+
+# deploy:
+#   provider: releases
+#   api_key:
+#     secure: KN0SBipD8YlaKM9csGOLPP/vowQQ0ZpfeTaLiZqzbpoDrWr5TufRj+xGvH/a+GzCT3NLgeyGfqGuXNrK0qvh/9aoeLYyaNjhAezeWxhNhoCTjmCEabr5/+bLKlPg8WYaz00p5D3cQ8Hlig9ZPMoieSn0V4qceN3FRqlJKctAu4zleZptkXN3pMX0AIGWbq8u64Oqrmu0V0xLU4mg6pGhtQZ6m/NdPfd9ZbyFZUcqUSyhm9SINMlViMesVjc0zLZ+yj2TRHNrQwH4dvtx3WjCru2Q1HS6mPBMfTdyVK9z6JonKCY3zk3MonL4pWQnafH3sROVF2s4ny8zBeeM4sjqbGwPqieNsVAmq6apf/+B+YBMlhB4XoTrL0liPV1IRjCvss1BsswuBDTrGCpdtk4VN7RDnEx4BpkZ0wi9YcxuQIgD4oPoVZEHmVbUCTUNVZYS5BRh8cQNYGsZgGyjWVWuThWeOXgeXLZ7zoHHswYvOfkrt4fA3PGvTpSLXobd7m7xLnbG08OXiedFSk+CITV1kpO34Zh0C8pXgOpo7y/EDXRVFmRWA4iZrGEDH/FoIPP+T87aAPvoF29ZokFv4eLXRl1p4NwhN4sBz+R0pztdO7WwjliPrqrXMMl8CyujqVhZ64MVRlOvs+n/G3pgdRUnegaMRU+M+8MenJmLW4r+Ago=
+#   file_glob: true
+#   file: release/*
+#   on:
+#     repo: azimut/${PACKAGE_NAME}
+#   skip_cleanup: true
+#   overwrite: true
