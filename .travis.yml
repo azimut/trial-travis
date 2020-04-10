@@ -6,7 +6,7 @@ language: c
 
 # NOTE: also change name on deploy: section below
 env:
-  - SBCL_VERSION="2.0.3" SDL_VERSION="2.0.10" GLFW_VERSION="3.3.2" BINARY_NAME="vydia" PACKAGE_NAME="trial-travis"
+  - SBCL_VERSION="2.0.3" GLFW_VERSION="3.3.2" BINARY_NAME="vydia" PACKAGE_NAME="trial-travis"
 
 branches:
   only:

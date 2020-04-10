@@ -8,7 +8,7 @@
   :serial t
   :defsystem-depends-on (:deploy)
   :build-operation "deploy-op"
-  :build-pathname "vidya"
+  :build-pathname "vydia"
   :entry-point "trial-travis::toplevel"
   :depends-on (#:trial-glfw)
   :components ((:file "package")
