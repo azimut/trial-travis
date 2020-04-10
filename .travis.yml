@@ -98,7 +98,7 @@ install:
   cd ~/quicklisp/local-projects
   git clone --depth=50 https://github.com/Shirakumo/trial
   cd trial/
-  git revert 032abbd6a8e44e24e41d4a8bdfffe3f691c443cb
+  git revert -n 032abbd6a8e44e24e41d4a8bdfffe3f691c443cb
   cd ~
 
 #
