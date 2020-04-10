@@ -67,7 +67,7 @@ install:
     cd ~
   fi
   if [ "$TRAVIS_OS_NAME" = "windows" ]; then
-    cp -v $HOME/glfw/glfw-${GLFW_VERSION}.bin.WIN64/lib-vc2012/glfw3.dll C:/windows/system32/
+    cp -v $HOME/glfw/glfw-${GLFW_VERSION}.bin.WIN64/lib-vc2012/* C:/windows/system32/
   fi
 #
 # SBCL build
