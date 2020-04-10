@@ -13,6 +13,7 @@ branches:
 
 cache:
   directories:
+    - "$HOME/trial"
     - "$HOME/libz"
     - "$HOME/sbcl"
     - "$HOME/glfw"
@@ -91,29 +92,19 @@ install:
   --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(sb-ext:exit)";
   rm -rf ~/quicklisp/local-projects; mkdir ~/quicklisp/local-projects; fi
 #
+# Trial
+#
+- |
+  cd ~/quicklisp/local-projects
+  git clone --depth=50 https://github.com/Shirakumo/trial
+  cd trial/
+  git revert 032abbd6a8e44e24e41d4a8bdfffe3f691c443cb
+  cd ~
+
+#
 # Copy local-projects
 #
 - mv $SOURCE_DIR ~/quicklisp/local-projects
-#
-# Zlib
-#
-# - |
-#   if [ "$TRAVIS_OS_NAME" = "windows"  ]; then
-#     if [ ! -f "$HOME/libz/zlib1211.zip" ]; then
-#       choco install make
-#       mkdir -p $HOME/libz
-#       cd $HOME/libz
-#       wget https://zlib.net/zlib1211.zip
-#       unzip zlib1211.zip
-#       cd zlib-1.2.11/
-#       ./configure --sharedlibdir=/bin --prefix=/
-#       make SHAREDLIB=libz.dll SHAREDLIBM=libz-1.dll SHAREDLIBV=libz-1.2.11.dll LDSHAREDLIBC='' -j1
-#     fi
-#     cp -v $HOME/libz/zlib-1.2.11/libz.dll C:/windows/system32/
-#     cp -v $HOME/libz/zlib-1.2.11/libz-1.dll C:/windows/system32/
-#     cp -v $HOME/libz/zlib-1.2.11/libz-1.2.11.dll C:/windows/system32/
-#     cd ~
-#   fi
 
 script:
   - sbcl --disable-debugger --eval "(ql:update-all-dists)" --eval "(sb-ext:exit)"
@@ -122,13 +113,13 @@ script:
   - mv ~/quicklisp/local-projects/${PACKAGE_NAME}/bin ~/bin
 
 before_deploy:
-- if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install zip; fi
-- mv ~/bin ~/quicklisp/local-projects/${PACKAGE_NAME}/bin
-- cd ~/quicklisp/local-projects/${PACKAGE_NAME}
-- if [ "$TRAVIS_OS_NAME" = "windows" ]; then mv "bin/${BINARY_NAME}" "bin/${BINARY_NAME}.exe"; fi
-- mkdir release
-- zip -r "release/binaries-${TRAVIS_OS_NAME}.zip" bin;
-- git tag -f latest
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install zip; fi
+  - mv ~/bin ~/quicklisp/local-projects/${PACKAGE_NAME}/bin
+  - cd ~/quicklisp/local-projects/${PACKAGE_NAME}
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then mv "bin/${BINARY_NAME}" "bin/${BINARY_NAME}.exe"; fi
+  - mkdir release
+  - zip -r "release/binaries-${TRAVIS_OS_NAME}.zip" bin;
+  - git tag -f latest
 
 # deploy:
 #   provider: releases
