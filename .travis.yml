@@ -1,47 +1,34 @@
 os:
-  - linux
-  - osx
-  - windows
+- linux
+- osx
+- windows
 language: c
-
-# NOTE: also change name on deploy: section below
 env:
-  - SBCL_VERSION="2.0.3" GLFW_VERSION="3.3.2" BINARY_NAME="vydia" PACKAGE_NAME="trial-travis"
-
+- SBCL_VERSION="2.0.3" GLFW_VERSION="3.3.2" BINARY_NAME="vydia" PACKAGE_NAME="trial-travis"
 branches:
   only:
   - master
-
 cache:
   directories:
-    - "$HOME/libz"
-    - "$HOME/sbcl"
-    - "$HOME/glfw"
-    - "$HOME/mesa3d"
-    - "$HOME/quicklisp"
-    - "$HOME/.cache/common-lisp"
-    - "$HOME/AppData/Local/cache/common-lisp"
-
+  - "$HOME/libz"
+  - "$HOME/sbcl"
+  - "$HOME/glfw"
+  - "$HOME/mesa3d"
+  - "$HOME/quicklisp"
+  - "$HOME/.cache/common-lisp"
+  - "$HOME/AppData/Local/cache/common-lisp"
 install:
 - SOURCE_DIR=$(pwd)
 - cd ~
-#
-# SBCL bootstrap
-#
-- if [ "$TRAVIS_OS_NAME" = "windows" -a ! -f "$HOME/sbcl/bin/sbcl" ]; then
-    SBCL_WINDOWS="http://prdownloads.sourceforge.net/sbcl/sbcl-1.4.14-x86-64-windows-binary.msi";
-    wget $SBCL_WINDOWS -O sbcl.msi;
-    choco install lessmsi make;
-    lessmsi x sbcl.msi $(cygpath -w "`pwd`/sbcl_ex/");
-    mv "sbcl_ex/SourceDir/PFiles/Steel Bank Common Lisp/1.4.14" sbcl_bin;
-    export SBCL_HOME="`pwd`/sbcl_bin";
-    export PATH="`pwd`/sbcl_bin:${PATH}";
+- if [ "$TRAVIS_OS_NAME" = "windows" -a ! -f "$HOME/sbcl/bin/sbcl" ]; then SBCL_WINDOWS="http://prdownloads.sourceforge.net/sbcl/sbcl-1.4.14-x86-64-windows-binary.msi";
+  wget $SBCL_WINDOWS -O sbcl.msi; choco install lessmsi make; lessmsi x sbcl.msi $(cygpath
+  -w "`pwd`/sbcl_ex/"); mv "sbcl_ex/SourceDir/PFiles/Steel Bank Common Lisp/1.4.14"
+  sbcl_bin; export SBCL_HOME="`pwd`/sbcl_bin"; export PATH="`pwd`/sbcl_bin:${PATH}";
   fi
-- if [ "$TRAVIS_OS_NAME" = "osx"   -a ! -f "$HOME/sbcl/bin/sbcl" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install sbcl; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" -a ! -f "$HOME/sbcl/bin/sbcl" ]; then sudo apt update; sudo apt install sbcl; fi
-#
-# OpenGL - Windows only
-#
+- if [ "$TRAVIS_OS_NAME" = "osx"   -a ! -f "$HOME/sbcl/bin/sbcl" ]; then HOMEBREW_NO_AUTO_UPDATE=1
+  brew install sbcl; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" -a ! -f "$HOME/sbcl/bin/sbcl" ]; then sudo apt
+  update; sudo apt install sbcl; fi
 - |
   if [ "$TRAVIS_OS_NAME" = "windows" -a ! -f "$HOME/mesa3d/mesa3d.7z" ]; then
     choco install 7zip
@@ -54,11 +41,10 @@ install:
   if [ "$TRAVIS_OS_NAME" = "windows" ]; then
     cp -v $HOME/mesa3d/x64/opengl32.dll C:/windows/system32/
   fi
-#
-# GLFW
-#
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install glfw3; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt update; sudo apt install libglfw3-dev; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then HOMEBREW_NO_AUTO_UPDATE=1 brew install glfw3;
+  fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt update; sudo apt install libglfw3-dev;
+  fi
 - |
   if [ "$TRAVIS_OS_NAME" = "windows" -a ! -f "$HOME/glfw/glfw-binary.zip" ]; then
     mkdir -p glfw
@@ -70,9 +56,6 @@ install:
   if [ "$TRAVIS_OS_NAME" = "windows" ]; then
     cp -v $HOME/glfw/glfw-${GLFW_VERSION}.bin.WIN64/lib-mingw-w64/* C:/windows/system32/
   fi
-#
-# SBCL build
-#
 - if [ ! -f "$HOME/sbcl/bin/sbcl" ]; then SBCL_SOURCE="http://downloads.sourceforge.net/project/sbcl/sbcl/$SBCL_VERSION/sbcl-$SBCL_VERSION-source.tar.bz2";
   wget $SBCL_SOURCE -O sbcl.tar.bz2; tar -xf sbcl.tar.bz2; cd "sbcl-$SBCL_VERSION";
   sh make.sh --fancy; unset SBCL_HOME; INSTALL_ROOT=~/sbcl ./install.sh; cd ~; fi
@@ -84,25 +67,19 @@ install:
   --eval "(sb-ext:exit)"; else sbcl --disable-debugger --eval "(load \"quicklisp/setup.lisp\")"
   --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(sb-ext:exit)";
   rm -rf ~/quicklisp/local-projects; mkdir ~/quicklisp/local-projects; fi
-#
-# Trial
-#
 - |
   cd ~/quicklisp/local-projects
 
   git config --global core.autocrlf false
-  
+
   git clone --depth=50 https://github.com/Shirakumo/cl-gamepad
   wget -O gamepad.zip https://github.com/Shirakumo/cl-gamepad/archive/master.zip
-  
+
   git clone --depth=50 https://github.com/Shirakumo/trial
   cd trial/
   git revert -n 032abbd6a8e44e24e41d4a8bdfffe3f691c443cb
 
   cd ~
-#
-# Zlib
-#
 - |
   if [ "$TRAVIS_OS_NAME" = "windows"  ]; then
     if [ ! -f "$HOME/libz/zlib1211.zip" ]; then
@@ -120,31 +97,28 @@ install:
     cp -v $HOME/libz/zlib-1.2.11/libz-1.2.11.dll C:/windows/system32/
     cd ~
   fi
-#
-# Copy local-projects
-#
 - mv $SOURCE_DIR ~/quicklisp/local-projects
-
 script:
-  - sbcl --disable-debugger --eval "(ql:update-all-dists)" --eval "(sb-ext:exit)"
-  - sbcl --disable-debugger --eval "(ql:quickload :deploy)" --eval "(ql:quickload :trial)" --eval "(sb-ext:exit)"
-  - sbcl --disable-debugger --eval "(ql:quickload :deploy)" --eval "(ql:quickload :${PACKAGE_NAME})" --eval "(deploy:define-library CL-OPENGL-BINDINGS::OPENGL :dont-deploy t)" --eval "(asdf:make :${PACKAGE_NAME})"
-  - mv ~/quicklisp/local-projects/${PACKAGE_NAME}/bin ~/bin
-
+- sbcl --disable-debugger --eval "(ql:update-all-dists)" --eval "(sb-ext:exit)"
+- sbcl --disable-debugger --eval "(ql:quickload :deploy)" --eval "(ql:quickload :trial)"
+  --eval "(sb-ext:exit)"
+- sbcl --disable-debugger --eval "(ql:quickload :deploy)" --eval "(ql:quickload :${PACKAGE_NAME})"
+  --eval "(deploy:define-library CL-OPENGL-BINDINGS::OPENGL :dont-deploy t)" --eval
+  "(asdf:make :${PACKAGE_NAME})"
+- mv ~/quicklisp/local-projects/${PACKAGE_NAME}/bin ~/bin
 before_deploy:
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install zip; fi
-  - mv ~/bin ~/quicklisp/local-projects/${PACKAGE_NAME}/bin
-  - cd ~/quicklisp/local-projects/${PACKAGE_NAME}
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then mv "bin/${BINARY_NAME}" "bin/${BINARY_NAME}.exe"; fi
-  - mkdir release
-  - zip -r "release/binaries-${TRAVIS_OS_NAME}.zip" bin;
-  - git tag -f latest
+- if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install zip; fi
+- mv ~/bin ~/quicklisp/local-projects/${PACKAGE_NAME}/bin
+- cd ~/quicklisp/local-projects/${PACKAGE_NAME}
+- if [ "$TRAVIS_OS_NAME" = "windows" ]; then mv "bin/${BINARY_NAME}" "bin/${BINARY_NAME}.exe";
+  fi
+- mkdir release
+- zip -r "release/binaries-${TRAVIS_OS_NAME}.zip" bin;
+- git tag -f latest
 deploy:
   provider: releases
   api_key:
-    secure: VXLMAq60wUzSBifJR00ETlegUblhtAdAcCbgCQ8ZkrBepTq4N05WLhX/+CquISWIVmwu3CK0PhOvCBBqzYhlt/ohTTy61me1DNXG4x39WnpoYoxk8C9y/SmZEoeoipCIvlag8pGIhgXJe6kSMvTvE7aAXlGqGYh0R7xGF9+1ttOMJYwr1tjwdj8Jp/HlnDB6QQqxChXWkqe1uSUVx45GCK8guMe21GCKSrVBFD+6k36FDe5EuK/NfJQ89Cdw4ArF6X2SekKnmllmPh6YKZhjoEo1JGcRmEeIUN28dmf2D6elfTcuCX3xri9PJ/OOEo/VykrpL/KkKCal/x2+e2436e2v8JyO1A60AJFW5H6VkD8vNb+6E7eGEEM2ZVhyeVYqoTgsk3CDKocX4nXbLtuyp/xQfgBfR4RPxsF5/FiIf2FuSCcodXzf96BzXa3BA3AynOCGwk92irbKYs3MmuD7WvEPMuMSkOVhhcJqA21a7NgOf4XpTsx6Trd9SzQM6T2F5X/myu7+jaVgApI3rPiwVoOQtXLJCvpVllvwWTs1UnvSg5SIcEARfy9sN8rkIUjc7aI7OfTvykHLTP58AjwJLYXDvrku0mKvQuVa/f2B7pT/L5hqvfIgqjkQ9sOOVHKsiMOypk54NG5Qt3vz/ZJLd2pwjgcQipFez7P3/S/Fn30=
+    secure: kcAdi7pVM3Nbf3oLHwa8jUBBuK2bLNCON4UlfyOR0xjHV3l9H85OPErR0a548i9xcz7ERHT91nl9Zmh8owzFG8p2Pwc9QLawWN/fuj20G6cXfnS9bgXwiYWhzPiCW6t/jcdOOdJ058a394g9LtYMSvz7cV9dLbGkzS4Ae/JkSjAZ2bOpYNJcCsUpkA/Lb9wsCjeex5BfLBV/AU+XuOn4lM8FJ0jAQv/TiwcHGXwEFIbAvPYxNku5LEWkJqq7k0gq7a2YoOpjGEVCO3oVRf39tJ7vyBtJB0GAxuj0eLbiyAaoZ2wyFMZbXOy9Hdi4DaYwqvP6jWre67CUhQ+b+VwinBc3lFC0S0sIiYls1TdHJVS8m0zaST/TwiFHQhzqKBLNJ/isBjesaoe+8eslFlmGPAQZ3b88ULZ2tOL2sy9unU0r/HxI54+SPMZiMJB36uPDgyL2cxjiO60sw4n/PmwZvqDG0Em/T2Npui/UXaWXdTOzXqQvfsmcpuu4St5PpnOwEZ0B9d7icAyKTcx3xyEPdBYTtYQ4D0Ilz2wiMfuNklWUzyv7TvrJsi3pxkw7IINp0ct7FNLpcXDHTieur8SYQD84INThE/fLQd896rSW6QQ/n3D0HIsXsPhwLNoZ9OdhU2pcVL174NZXBolR8qmjDCEUBGwgGBGgnvJCPhOGaGg=
   file: release/*
   on:
     repo: azimut/trial-travis
-  skip_cleanup: true
-  overwrite: true
