@@ -1,6 +1,6 @@
 os:
-#  - linux
-#  - osx
+  - linux
+  - osx
   - windows
 language: c
 
@@ -119,13 +119,12 @@ before_deploy:
   - mkdir release
   - zip -r "release/binaries-${TRAVIS_OS_NAME}.zip" bin;
   - git tag -f latest
-# deploy:
-#   provider: releases
-#   api_key:
-#     secure: FrK6FVCYTFnqy91tAbd101qq8uul2ulIsjWmheOINVtLFvLwgu32d4S7r+xrOisDxY421pOxdNAnZPG3eBhPYZSzTDfnYoNKhicTs5z3abnehhtFI2UZdOtLwlM5ZxrbWJR76PlWiELt1Fzz4rPK2Q+oxyxt/Ir+DdtEF/4E0eAUGer5Gs+MM5HaHKNqcUJC6jfROjnSE3C257QSS87qdt6A9dEFEf/XwELjK9LsYD7lT/N8GmIUZgDJrQlnHa7jos3vX3XrWUmvuLz+pa0qRRLR0xPIEm5phy/2b+BHEWdTwO5zYMfwvaWVrFA/XzYPa+p63NIhePmPVVAbfVuaG2471FMVsDz+iNxrMowPSGXLQhJh7+/o0hBX1H3MUxKtdkPd4JA98/kEfTmJqFqOC8O+HtrqyC1C0f7VAY4rDoBywuuQUvp2QF+YaiVZ1WTx3ZFTSCO1LJIiPer7sh2xFz3YJ1xK5IJIYIBw1xdkwRqYj/ein9OEFH+DuFiDmbAVnNSoVdSLIuHfYgSUyraPuzuSBdzTXH5whLToc1vfJn78vTRL3JS3e54u/ZtsQ/q7KITmhoRWUObaj0bnjdX7rWpr4wfcOPp0q/sn5BiyLePuLX3dy1960/xEdOxZU2Hlq7aTPeRdl3EUgu9CKEacPv89Sd5yOXop6XQ7kV+b6Cs=
-#   file: release/*
-#   on:
-#     repo: azimut/trial-travis
-#   skip_cleanup: true
-#   overwrite: true
-
+deploy:
+  provider: releases
+  api_key:
+    secure: FrK6FVCYTFnqy91tAbd101qq8uul2ulIsjWmheOINVtLFvLwgu32d4S7r+xrOisDxY421pOxdNAnZPG3eBhPYZSzTDfnYoNKhicTs5z3abnehhtFI2UZdOtLwlM5ZxrbWJR76PlWiELt1Fzz4rPK2Q+oxyxt/Ir+DdtEF/4E0eAUGer5Gs+MM5HaHKNqcUJC6jfROjnSE3C257QSS87qdt6A9dEFEf/XwELjK9LsYD7lT/N8GmIUZgDJrQlnHa7jos3vX3XrWUmvuLz+pa0qRRLR0xPIEm5phy/2b+BHEWdTwO5zYMfwvaWVrFA/XzYPa+p63NIhePmPVVAbfVuaG2471FMVsDz+iNxrMowPSGXLQhJh7+/o0hBX1H3MUxKtdkPd4JA98/kEfTmJqFqOC8O+HtrqyC1C0f7VAY4rDoBywuuQUvp2QF+YaiVZ1WTx3ZFTSCO1LJIiPer7sh2xFz3YJ1xK5IJIYIBw1xdkwRqYj/ein9OEFH+DuFiDmbAVnNSoVdSLIuHfYgSUyraPuzuSBdzTXH5whLToc1vfJn78vTRL3JS3e54u/ZtsQ/q7KITmhoRWUObaj0bnjdX7rWpr4wfcOPp0q/sn5BiyLePuLX3dy1960/xEdOxZU2Hlq7aTPeRdl3EUgu9CKEacPv89Sd5yOXop6XQ7kV+b6Cs=
+  file: release/*
+  on:
+    repo: azimut/trial-travis
+  skip_cleanup: true
+  overwrite: true
