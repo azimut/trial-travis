@@ -14,6 +14,7 @@ branches:
 
 cache:
   directories:
+    - "$HOME/libz"
     - "$HOME/sbcl"
     - "$HOME/glfw"
     - "$HOME/mesa3d"
@@ -99,7 +100,26 @@ install:
   git revert -n 032abbd6a8e44e24e41d4a8bdfffe3f691c443cb
 
   cd ~
-
+#
+# Zlib
+#
+- |
+  if [ "$TRAVIS_OS_NAME" = "windows"  ]; then
+    if [ ! -f "$HOME/libz/zlib1211.zip" ]; then
+      choco install make
+      mkdir -p $HOME/libz
+      cd $HOME/libz
+      wget https://zlib.net/zlib1211.zip
+      unzip zlib1211.zip
+      cd zlib-1.2.11/
+      ./configure --sharedlibdir=/bin --prefix=/
+      make SHAREDLIB=libz.dll SHAREDLIBM=libz-1.dll SHAREDLIBV=libz-1.2.11.dll LDSHAREDLIBC='' -j1
+    fi
+    cp -v $HOME/libz/zlib-1.2.11/libz.dll C:/windows/system32/
+    cp -v $HOME/libz/zlib-1.2.11/libz-1.dll C:/windows/system32/
+    cp -v $HOME/libz/zlib-1.2.11/libz-1.2.11.dll C:/windows/system32/
+    cd ~
+  fi
 #
 # Copy local-projects
 #
