@@ -88,10 +88,16 @@ install:
 #
 - |
   cd ~/quicklisp/local-projects
-  git clone --depth=50 https://github.com/Shirakumo/cl-gamepad
+
+  wget -O gamepad.zip https://github.com/Shirakumo/cl-gamepad/archive/master.zip
+  7z x gamepad.zip
+  mv cl-gamepad-master cl-gamepad
+  rm -f gamepad.zip
+  
   git clone --depth=50 https://github.com/Shirakumo/trial
   cd trial/
   git revert -n 032abbd6a8e44e24e41d4a8bdfffe3f691c443cb
+  
   cd ~
 
 #
